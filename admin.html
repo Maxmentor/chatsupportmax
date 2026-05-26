@@ -86,8 +86,9 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'maxmentor_cache';
-    const SECRET_KEY = 'MAX811525'; // Same key required to decrypt
+const STORAGE_KEY = 'maxmentor_cache';
+// 'TUFYODExNTI1' ko decrypt karne par 'MAX811525' banega
+const SECRET_KEY = atob('TUFYODExNTI1');
 
     // --- Authentication System ---
     function checkAuth() {
