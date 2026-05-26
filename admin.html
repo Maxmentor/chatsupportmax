@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - MAXMENTOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Dark Mode Theme Variables */
+        :root {
+            --primary: #38bdf8; /* Cyan accent */
+            --bg: #0f172a; /* Deep dark background */
+            --card: #1e293b; /* Slightly lighter dark for cards */
+            --text: #f8fafc; /* Light text */
+            --text-muted: #94a3b8; /* Grayish text */
+            --border: #334155;
+            --error: #f87171;
+            --success: #34d399;
+            --btn-bg: #0284c7;
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        /* Container Setup */
+        .container { width: 100%; max-width: 800px; }
+        
+        /* Login Screen Styles */
+        #loginScreen { max-width: 400px; margin: 10vh auto; background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; border: 1px solid var(--border); }
+        #loginScreen h2 { color: var(--primary); margin-bottom: 20px; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        .pin-input { width: 100%; padding: 15px; text-align: center; font-size: 24px; letter-spacing: 10px; background: var(--bg); color: var(--text); border: 2px solid var(--border); border-radius: 8px; outline: none; margin-bottom: 15px; transition: 0.3s; }
+        .pin-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+        .error-msg { color: var(--error); font-size: 14px; margin-bottom: 15px; display: none; font-weight: 500; background: rgba(248, 113, 113, 0.1); padding: 8px; border-radius: 6px; }
+        
+        /* Admin Panel Styles */
+        #adminPanel { display: none; width: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); border: 1px solid var(--border); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .header h1 { margin: 0; font-size: 22px; color: var(--primary); }
+        .logout-btn { background: rgba(248, 113, 113, 0.2); color: var(--error); padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid rgba(248, 113, 113, 0.3); transition: 0.3s; }
+        .logout-btn:hover { background: var(--error); color: white; }
+        
+        .admin-list { display: flex; flex-direction: column; gap: 15px; }
+        .admin-item { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 10px; border-left: 4px solid var(--error); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .admin-item.read { border-left-color: var(--success); opacity: 0.7; }
+        
+        .info-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+        .user-info strong { color: var(--text); font-size: 16px; }
+        .user-info span { color: var(--text-muted); font-size: 13px; margin-left: 10px; }
+        
+        .msg-text { background: var(--bg); color: var(--text-muted); padding: 15px; border-radius: 8px; font-size: 14px; margin-top: 5px; border: 1px solid var(--border); line-height: 1.6; }
+        
+        button.action-btn { background: var(--success); color: #064e3b; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        button.action-btn:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(52, 211, 153, 0.3); }
+        button.action-btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+        
+        button.login-btn { width: 100%; background: var(--btn-bg); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: 0.3s; }
+        button.login-btn:hover { background: var(--primary); color: #0f172a; }
+        
+        @media (max-width: 600px) {
+            .info-row { flex-direction: column; }
+            .user-info span { margin-left: 0; display: block; margin-top: 4px; }
+            button.action-btn { width: 100%; margin-top: 10px; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen" class="container">
+    <h2>🔒 Admin Access</h2>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Enter your 6-digit PIN to continue.</p>
+    <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off">
+    <div id="errorMsg" class="error-msg">Incorrect PIN. Try again.</div>
+    <button onclick="verifyPin()" class="login-btn">Login</button>
+</div>
+
+<div id="adminPanel" class="container">
+    <div class="header">
+        <h1>Admin Panel</h1>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span style="color: var(--text-muted); font-size: 14px;">Messages: <b id="msgCount" style="color: var(--primary);">0</b></span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="admin-list" id="adminContainer">
+        </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'maxmentor_cache';
+    const SECRET_KEY = 'MAX811525'; // Same key required to decrypt
+
+    // --- Authentication System ---
+    function checkAuth() {
+        if (sessionStorage.getItem('maxmentor_admin_auth') === 'true') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            renderAdminMessages();
+        } else {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+    }
+
+    function verifyPin() {
+        const pin = document.getElementById('pinInput').value;
+        const encryptedInput = btoa(pin.split('').reverse().join(''));
+        
+        if (encryptedInput === 'NTI1MTE4') {
+            sessionStorage.setItem('maxmentor_admin_auth', 'true');
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('pinInput').value = '';
+            checkAuth();
+        } else {
+            document.getElementById('errorMsg').style.display = 'block';
+            document.getElementById('pinInput').value = '';
+        }
+    }
+
+    function logout() {
+        sessionStorage.removeItem('maxmentor_admin_auth');
+        checkAuth();
+    }
+
+    document.getElementById('pinInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') verifyPin();
+    });
+
+    // --- Encryption Logic ---
+    function encryptData(data) {
+        const text = JSON.stringify(data);
+        let encrypted = "";
+        for (let i = 0; i < text.length; i++) {
+            encrypted += String.fromCharCode(text.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
+        }
+        return btoa(encrypted);
+    }
+
+    function decryptData(encryptedText) {
+        try {
+            const text = atob(encryptedText);
+            let decrypted = "";
+            for (let i = 0; i < text.length; i++) {
+                decrypted += String.fromCharCode(text.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
+            }
+            return JSON.parse(decrypted);
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function getMessages() {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (!savedData) return [];
+        return decryptData(savedData);
+    }
+
+    function markAsRead(id) {
+        let msgs = getMessages();
+        msgs = msgs.map(msg => {
+            if (msg.id === id) { msg.isRead = true; }
+            return msg;
+        });
+        localStorage.setItem(STORAGE_KEY, encryptData(msgs)); // Re-encrypt and save
+        renderAdminMessages();
+    }
+
+    function renderAdminMessages() {
+        const container = document.getElementById('adminContainer');
+        const msgs = getMessages();
+        
+        document.getElementById('msgCount').innerText = msgs.length;
+        container.innerHTML = '';
+
+        if(msgs.length === 0) {
+            container.innerHTML = '<div class="admin-item"><p style="text-align:center; color: var(--text-muted);">No queries found.</p></div>';
+            return;
+        }
+
+        msgs.forEach(msg => {
+            container.innerHTML += `
+                <div class="admin-item ${msg.isRead ? 'read' : ''}">
+                    <div class="info-row">
+                        <div class="user-info">
+                            <strong>${msg.name}</strong> 
+                            <span>📧 ${msg.email}</span>
+                        </div>
+                        <button class="action-btn" 
+                            onclick="markAsRead(${msg.id})" 
+                            ${msg.isRead ? 'disabled' : ''}>
+                            ${msg.isRead ? '✔ Read' : 'Mark as Read'}
+                        </button>
+                    </div>
+                    <div class="msg-text">${msg.message}</div>
+                </div>
+            `;
+        });
+    }
+
+    checkAuth();
+
+    window.addEventListener('storage', function() {
+        if (sessionStorage.getItem('maxmentor_admin_auth') === 'true') {
+            renderAdminMessages();
+        }
+    });
+</script>
+</body>
+</html>
